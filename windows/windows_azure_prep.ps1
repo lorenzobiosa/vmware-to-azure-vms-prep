@@ -305,6 +305,7 @@ function Post-Migration {
         # final cleanup
         $task = 'AzurePrep_PreMigration'
         schtasks.exe /Delete /tn $task /f | Out-Null
+        cd 'C:\'
         Remove-Item -Path $MainDir -Recurse -Force | Out-Null
         Restart-Computer -Force | Out-Null
     } else {
