@@ -76,7 +76,7 @@ From an elevated PowerShell prompt in the script directory:
 ```powershell
 Set-Location 'C:\vmware-to-azure-vms-prep\azure\windows'
 Set-ExecutionPolicy RemoteSigned -Force
-.\windows_azure_prep.ps1 -DomainSuffix 'bnet.corp' [-ProxyAddress 'proxy.bnet.corp'] [-ProxyBypassList '*.local;168.63.129.16']
+.\windows_azure_prep.ps1 -DomainSuffix 'bnet.corp' [-ProxyAddress 'proxy.bnet.corp'] [-ProxyBypassList '*.corp;168.63.129.16']
 ```
 
 1. **First run**: executes *pre-migration* tasks and creates a Scheduled Task for reboot.
@@ -90,7 +90,7 @@ Set-ExecutionPolicy RemoteSigned -Force
 |--------------------|----------|--------------------------------------------------|
 | `-DomainSuffix`    | Yes      | DNS search suffix (e.g., `bnet.corp`)           |
 | `-ProxyAddress`    | No       | Proxy server address (e.g., `proxy.bnet.corp`)  |
-| `-ProxyBypassList` | No       | Addresses to bypass proxy (e.g., `*.local;168.63.129.16`) |
+| `-ProxyBypassList` | No       | Addresses to bypass proxy (e.g., `*.corp;168.63.129.16`) |
 
 ---
 
