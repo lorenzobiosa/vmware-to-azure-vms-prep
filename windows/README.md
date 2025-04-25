@@ -51,7 +51,7 @@ It uses a **state file** (`windows_azure_prep.state`) and logs actions to `windo
 - Windows Server 2008 or later
 - PowerShell 2.x or newer
 - Administrative privileges
-- Working directory: `C:\vm-prep\azure\windows`
+- Working directory: `C:\vmware-to-azure-vms-prep\azure\windows`
 
 ---
 
@@ -59,7 +59,7 @@ It uses a **state file** (`windows_azure_prep.state`) and logs actions to `windo
 
 1. Create the working directory:
    ```powershell
-   New-Item -Path 'C:\vm-prep\azure\windows' -ItemType Directory -Force
+   New-Item -Path 'C:\vmware-to-azure-vms-prep\azure\windows' -ItemType Directory -Force
    ```
 2. Copy the following files into that folder:
    - `windows_azure_prep.ps1`
@@ -74,9 +74,9 @@ It uses a **state file** (`windows_azure_prep.state`) and logs actions to `windo
 From an elevated PowerShell prompt in the script directory:
 
 ```powershell
-Set-Location 'C:\vm-prep\azure\windows'
+Set-Location 'C:\vmware-to-azure-vms-prep\azure\windows'
 Set-ExecutionPolicy RemoteSigned -Force
-.\windows_azure_prep.ps1 -DomainSuffix 'corp.local' [-ProxyAddress 'proxy.corp.local'] [-ProxyBypassList '*.local;168.63.129.16']
+.\windows_azure_prep.ps1 -DomainSuffix 'bnet.corp' [-ProxyAddress 'proxy.bnet.corp'] [-ProxyBypassList '*.local;168.63.129.16']
 ```
 
 1. **First run**: executes *pre-migration* tasks and creates a Scheduled Task for reboot.
@@ -88,8 +88,8 @@ Set-ExecutionPolicy RemoteSigned -Force
 
 | Parameter          | Required | Description                                      |
 |--------------------|----------|--------------------------------------------------|
-| `-DomainSuffix`    | Yes      | DNS search suffix (e.g., `corp.local`)           |
-| `-ProxyAddress`    | No       | Proxy server address (e.g., `proxy.corp.local`)  |
+| `-DomainSuffix`    | Yes      | DNS search suffix (e.g., `bnet.corp`)           |
+| `-ProxyAddress`    | No       | Proxy server address (e.g., `proxy.bnet.corp`)  |
 | `-ProxyBypassList` | No       | Addresses to bypass proxy (e.g., `*.local;168.63.129.16`) |
 
 ---
