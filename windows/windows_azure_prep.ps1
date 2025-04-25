@@ -31,24 +31,19 @@
 [CmdletBinding()]
 param(
     [Parameter(Mandatory=$true)]
-    [string]$DomainSuffix
-)
-param(
+    [string]$DomainSuffix,
     [Parameter(Mandatory=$false)]
-    [string]$ProxyAddress
-)
-param(
-    [Parameter(Mandatory=$false)]
+    [string]$ProxyAddress,
     [string]$ProxyBypassList
 )
 
 # Enforce strict mode v2.0 and terminate on errors
 Set-StrictMode -Version 2.0
-$ErrorActionPreference = 'Stop'
+$ErrorActionPreference = 'Continue'
 
 # Paths
-$MainDir        = 'C:\vm-prep'
-$BaseDir        = Join-Path $BaseDir 'azure\windows'
+$MainDir        = 'C:\vmware-to-azure-vms-prep'
+$BaseDir        = Join-Path $MainDir 'windows'
 $ScriptFullPath = $MyInvocation.MyCommand.Definition
 $StateFilePath  = Join-Path $BaseDir 'windows_azure_prep.state'
 $LogFile        = Join-Path $BaseDir 'windows_azure_prep.log'
@@ -251,10 +246,10 @@ function Update-RemoteDesktopRegistrySettings {
     $cc = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server'
     Set-ItemProperty -Path $cc -Name fDenyTSConnections -Value 0 -Type DWord -Force | Out-Null
     $cc = 'HKLM:\SOFTWARE\Policies\Microsoft\Windows NT\Terminal Services'
-    Set-ItemProperty -Path $cc -Name fDenyTSConnections -Value 0 -Type DWord -Force | Out-Null
-    Set-ItemProperty -Path $cc -Name KeepAliveEnable -Value 1  -Type DWord -Force | Out-Null
-    Set-ItemProperty -Path $cc -Name KeepAliveInterval -Value 1  -Type DWord -Force | Out-Null
-    Set-ItemProperty -Path $cc -Name fDisableAutoReconnect -Value 0 -Type DWord -Force | Out-Null
+    Set-ItemProperty -Path $cc -Name fDenyTSConnections -Value 0 -Type DWord -Force 2>$null | Out-Null
+    Set-ItemProperty -Path $cc -Name KeepAliveEnable -Value 1  -Type DWord -Force 2>$null | Out-Null
+    Set-ItemProperty -Path $cc -Name KeepAliveInterval -Value 1  -Type DWord -Force 2>$null | Out-Null
+    Set-ItemProperty -Path $cc -Name fDisableAutoReconnect -Value 0 -Type DWord -Force 2>$null | Out-Null
     $cc = 'HKLM:\SYSTEM\CurrentControlSet\Control\Terminal Server\Winstations\RDP-Tcp'
     Set-ItemProperty -Path $cc -Name PortNumber -Value 3389 -Type DWord -Force | Out-Null
     Set-ItemProperty -Path $cc -Name LanAdapter -Value 0 -Type DWord -Force | Out-Null
@@ -262,7 +257,8 @@ function Update-RemoteDesktopRegistrySettings {
     Set-ItemProperty -Path $cc -Name KeepAliveTimeout -Value 1 -Type DWord -Force | Out-Null
     Set-ItemProperty -Path $cc -Name fInheritReconnectSame -Value 1 -Type DWord -Force | Out-Null
     Set-ItemProperty -Path $cc -Name fReconnectSame -Value 0 -Type DWord -Force | Out-Null
-    Set-ItemProperty -Path $cc -Name MaxInstanceCount -Value 4294967295 -Type DWord -Force | Out-Null
+    Set-ItemProperty -Path $cc -Name MaxInstanceCount -Value 2147483647 -Type DWord -Force | Out-Null
+    Set-ItemProperty -Path $cc -Name MaxInstanceCount -Value 4294967295 -Type DWord -Force 2>$null | Out-Null
     if ((Get-Item -Path $cc).Property -contains 'SSLCertificateSHA1Hash')
     {
         Remove-ItemProperty -Path $cc -Name SSLCertificateSHA1Hash -Force | Out-Null
@@ -271,12 +267,12 @@ function Update-RemoteDesktopRegistrySettings {
 }
 
 function Configure-FirewallRules {
-    Set-NetFirewallProfile -Profile Domain, Public, Private -Enabled True
-    Enable-PSRemoting -Force
-    Get-NetFirewallRule -DisplayGroup 'Remote Desktop' | Set-NetFirewallRule -Enabled True
-    Set-NetFirewallRule -Name FPS-ICMP4-ERQ-In -Enabled True
-    New-NetFirewallRule -DisplayName AzurePlatform -Direction Inbound -RemoteAddress 168.63.129.16 -Profile Any -Action Allow -EdgeTraversalPolicy Allow
-    New-NetFirewallRule -DisplayName AzurePlatform -Direction Outbound -RemoteAddress 168.63.129.16 -Profile Any -Action Allow
+    netsh advfirewall set allprofiles state on | Out-Null
+    winrm quickconfig -q | Out-Null
+    netsh advfirewall firewall set rule group="Remote Desktop" new enable=yes | Out-Null
+    netsh advfirewall firewall set rule group="FPS-ICMP4-ERQ-In" new enable=yes | Out-Null
+    netsh advfirewall firewall add rule name="AzurePlatform" dir=in action=allow remoteip=168.63.129.16 profile=any edge=yes | Out-Null
+    netsh advfirewall firewall add rule name="AzurePlarform" dir=out action=allow remoteip=168.63.129.16 profile=any | Out-Null
     Log-Message "Firewall rules configured"
 }
 
