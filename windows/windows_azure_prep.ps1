@@ -216,15 +216,9 @@ function Set-ProxySettings {
 }
 
 function Set-DNSSuffix {
-    $psVerion = $PSVersionTable.PSVersion.Major
-
-    if ($psVerion -gt 2) {
-        $nics = Get-WmiObject -Class Win32_NetworkAdapterConfiguration -Filter "IPEnabled=TRUE"
-        foreach ($nic in $nics) {
-            $nic.SetDNSSuffixSearchOrder(@($DomainSuffix)) | Out-Null
-        }
-        Log-Message "DNS suffix set to $DomainSuffix"
-    }
+    $adapter = Get-WmiObject -Class Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled -eq $true }
+    $adapter.SetDNSDomain($DomainSuffix) | Out-Null
+    Log-Message "DNS suffix set to $DomainSuffix"
 }
 
 function Online-OfflineDisks {
